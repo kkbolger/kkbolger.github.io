@@ -1,0 +1,229 @@
+<!doctype html>
+<html>
+<!-- Course grade calculator written by Kate Bolger, May 2020
+		Special calculation to take into consideration NO final exams and
+		Q4 pass/fail option.
+
+		Grade is calculated using the traditional formula, with no FX AND with pass/fail option
+	-->
+<head>
+<meta charset="UTF-8">
+<title>GHS 2020 Grade Calculator</title>
+<!-- importing jQuery library to reduce code needed for html selectors -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<style>
+document {
+    font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "DejaVu Sans", Verdana, "sans-serif";
+}
+fieldset {
+    height: auto;
+    width: auto;
+    display: inline-block;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding-top: 0.35em;
+    padding-bottom: 0.625em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    border: 8px ridge teal;
+}
+}
+legend {
+    font-size: 20px;
+}
+fieldset p {
+    clear: both;
+    padding: 5px;
+}
+select {
+    padding: 3px;
+    margin: 0;
+    border-radius: 4px;
+    box-shadow: 0 3px 0 #ccc, 0 -1px #fff inset;
+    background: black;
+    color: skyblue;
+    border: none;
+    outline: none;
+    display: inline-block;
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+}
+#traditional, #passFail {
+    font-size: 120%;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+<br>
+<p style="font-size:160%;"><b><em>2020 SPECIAL GHS Course Grade Calculator</em></b></p>
+<p><b>Select each grade and then click "Calculate Grade."</b> <em><br>
+  <br>
+  Use "Clear All Grades" to refresh the page and reset <u>all</u> grades <b>or</b><br>
+  just change some grades and click "Calculate Grade" again. <br>
+  <br>
+  Semester Course?  Enter grades <u>only</u> for Semester 2.  Leave all other grades blank.</em></p>
+<form id="gradeForm">
+  <fieldset>
+    <!-- including this creates a box around the fields.  Nice look! -->
+    <legend>Use drop down boxes to choose grades:</legend>
+    <p>Quarter 1 Grade:
+      <select class="repeat" id="Q1">
+      </select>
+    </p>
+    <p>Quarter 2 Grade:
+      <select class="repeat" id="Q2">
+      </select>
+    </p>
+    <p>Midetrm Exam Grade:
+      <select class="repeat" id="MX">
+      </select>
+    </p>
+    <p>Quarter 3 Grade:
+      <select class="repeat" id="Q3">
+      </select>
+    </p>
+    <p>Estimate Quarter 4 Grade:
+      <select class="repeat" id="Q4">
+      </select>
+    </p>
+    <p>Final Exam Grade:
+      <select id="FX">
+        <option value="None">No Exam</option>
+      </select>
+    </p>
+    <!-- style="position: fixed; top:440px; left: 55px">-->
+    <!-- move the submit buttons to where I want them -->
+    <div id="buttonsDiv">
+      <input type="button" style="font-weight:bold; font-family:Verdana; font-size:15px; padding:5px;  border-radius:4px; cursor:pointer" value="Calculate Grades" onclick="gradeCalculator()">
+    </div>
+  </fieldset>
+</form>
+<!-- end of form for grade entry -->
+<p id = "traditional">Traditional Grade Calculation Formula:</p>
+<p id = "passFail">2020 Pass/Fail Option Formula:</p>
+<script type="text/javascript">
+    var optionOpen = "<option value =";
+    var optionClosed = "</option>";
+    var selectItems = [" ", "A+", "A", "A-","B+", "B", "B-","C+", "C", "C-","D+", "D", "D-","F", "No Exam"];
+	var selectValues = ["None", "A+", "A", "A-","B+", "B", "B-","C+", "C", "C-","D+", "D", "D-","F", "None"];
+    $(".repeat").each(function(){
+        for (key in selectItems)
+        {
+            $(this).append(optionOpen + selectValues[key] +">"+ selectItems[key] + optionClosed);
+        }
+    });
+	
+	function gradeCalculator(){ // this is called on submit, when the user has entered their grade choices
+		var MP1=document.getElementById('Q1');
+		var MP2=document.getElementById('Q2');
+		var MX=document.getElementById('MX');
+		var MP3=document.getElementById('Q3');
+		var MP4=document.getElementById('Q4');
+		var FX = document.getElementById('FX');
+		var semesterCourse = false;
+		var midtermExam = true;
+		var courseGrade, p_f_courseGrade = 0;
+		var courseLetterGrade, p_f_courseLetterGrade = "";
+		console.log(MP1.value, MP2.value, MP3.value, MP4.value, MX.value, FX.value);
+
+		if ((MP1.value=="None")&&(MP2.value=="None")&&(MX.value=="None"))
+			{ 
+			// this is a semester course
+				semesterCourse = true;
+			}
+		if ((MP1.value!="None")&&(MP2.value!="None")&&(MX.value=="None"))
+			{ 
+			// there was no midterm exam for this course
+				midtermExam = false;
+			}
+		
+		// calculations
+		
+		//full year course, with midterm exam
+		if (!semesterCourse && midtermExam){
+			MP1grade=convertLetterToNumberGrade(MP1);console.log(MP1grade);
+			MP2grade=convertLetterToNumberGrade(MP2);console.log(MP2grade);
+			MP3grade=convertLetterToNumberGrade(MP3);console.log(MP3grade);
+			MP4grade=convertLetterToNumberGrade(MP4);console.log(MP4grade);
+			MXgrade=convertLetterToNumberGrade(MX);console.log(MXgrade);
+			courseGrade=.2*(MP1grade+MP2grade+MP3grade+MP4grade)+.2*MXgrade;
+				    courseGrade=(Math.round(courseGrade*100))/100;
+					courseLetterGrade=convertNumberToLetterGrade(courseGrade);
+			p_f_courseGrade=(.8/3)*(MP1grade+MP2grade+MP3grade)+.2*MXgrade;
+				    p_f_courseGrade=(Math.round(p_f_courseGrade*100))/100;
+					p_f_courseLetterGrade=convertNumberToLetterGrade(p_f_courseGrade);
+			}
+		
+		//full year course, no midterm exam
+		if (!semesterCourse && !midtermExam){
+			MP1grade=convertLetterToNumberGrade(MP1);console.log(MP1grade);
+			MP2grade=convertLetterToNumberGrade(MP2);console.log(MP2grade);
+			MP3grade=convertLetterToNumberGrade(MP3);console.log(MP3grade);
+			MP4grade=convertLetterToNumberGrade(MP4);console.log(MP4grade);
+			courseGrade=.25*(MP1grade+MP2grade+MP3grade+MP4grade);
+				    courseGrade=(Math.round(courseGrade*100))/100;
+					courseLetterGrade=convertNumberToLetterGrade(courseGrade);
+			p_f_courseGrade=(MP1grade+MP2grade+MP3grade)/3;
+				    p_f_courseGrade=(Math.round(p_f_courseGrade*100))/100;
+					p_f_courseLetterGrade=convertNumberToLetterGrade(p_f_courseGrade);
+			}
+		//semester, (no final, because no finals for anyone)
+		if (semesterCourse){
+			MP3grade=convertLetterToNumberGrade(MP3);console.log(MP3grade);
+			MP4grade=convertLetterToNumberGrade(MP4);console.log(MP4grade);
+			courseGrade=.5*(MP3grade+MP4grade);
+				    courseGrade=(Math.round(courseGrade*100))/100;
+					courseLetterGrade=convertNumberToLetterGrade(courseGrade);
+			p_f_courseGrade=(MP3grade);
+				    p_f_courseGrade=(Math.round(p_f_courseGrade*100))/100;
+					p_f_courseLetterGrade=convertNumberToLetterGrade(p_f_courseGrade);
+			}		
+		
+		//show result of both calculations
+		
+			document.getElementById("traditional").innerHTML = "Traditional Grade Calculation: " + courseGrade.toFixed(3)+"   or   " + courseLetterGrade;
+			document.getElementById("passFail").innerHTML = "Pass/Fail Grade Calculation: " + p_f_courseGrade.toFixed(3)+"   or   " + p_f_courseLetterGrade;
+	}
+	
+
+	function convertLetterToNumberGrade(GB){
+		// the name says it all!
+		if (GB.value == "A+") {GBgrade=4.33;}
+		else if (GB.value == "A") {GBgrade=4;}
+		else if (GB.value == "A-") {GBgrade=3.67;}
+		else if (GB.value == "B+") {GBgrade=3.33;}
+		else if (GB.value == "B") {GBgrade=3;}
+		else if (GB.value == "B-") {GBgrade=2.67;}
+		else if (GB.value == "C+") {GBgrade=2.33;}
+		else if (GB.value == "C") {GBgrade=2;}
+		else if (GB.value == "C-") {GBgrade=1.67;}
+		else if (GB.value == "D+") {GBgrade=1.33;}
+		else if (GB.value == "D") {GBgrade=1;}
+		else if (GB.value == "D-") {GBgrade=0.67;}
+		else GBgrade=0;
+		return GBgrade;
+	}
+
+	function convertNumberToLetterGrade(cG){ 
+		// the name says it all!
+		if (cG>=4.17){cLG="A+";}
+		else if (cG>=3.83){cLG="A";}
+		else if (cG>=3.5){cLG="A-";}
+		else if (cG>=3.17){cLG="B+";}
+		else if (cG>=2.83){cLG="B";}
+		else if (cG>=2.5){cLG="B-";}
+		else if (cG>=2.17){cLG="C+";}
+		else if (cG>=1.83){cLG="C";}
+		else if (cG>=1.5){cLG="C-";}
+		else if (cG>=1.17){cLG="D+";}
+		else if (cG>=0.83){cLG="D";}
+		else if (cG>=0.67){cLG="D-";}
+		else {cLG="F";}
+
+		return (cLG);}
+	
+</script>
+</body>
+</html>
